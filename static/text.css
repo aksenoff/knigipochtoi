@@ -1,0 +1,294 @@
+A {
+	FONT-SIZE: 12px; FONT-FAMILY: Tahoma; TEXT-DECORATION: underline
+}
+A:hover {
+	FONT-SIZE: 12px; TEXT-DECORATION: underline
+}
+.slink {
+	FONT-SIZE: 12px;
+	COLOR: Blue;
+	FONT-STYLE: normal;
+	FONT-FAMILY: Verdana, Arial;
+	TEXT-DECORATION: none;
+}
+.slink:hover {
+	FONT-SIZE: 12px;
+	COLOR: #000066;
+	FONT-STYLE: normal;
+	FONT-FAMILY: Verdana, Arial;
+	TEXT-DECORATION: none;
+}
+.blink {
+	FONT-WEIGHT: bold;
+	FONT-SIZE: 11px;
+	COLOR: #336699;
+	FONT-STYLE: normal;
+	FONT-FAMILY: Verdana, Arial, Tahoma;
+	TEXT-DECORATION: underline;
+	
+}
+.blink:hover {
+	FONT-WEIGHT: bold;
+	FONT-SIZE: 11px;
+	COLOR: Red;
+	FONT-STYLE: normal;
+	FONT-FAMILY: Verdana, Arial, Tahoma;
+	TEXT-DECORATION: underline;
+}
+.s {
+	FONT-SIZE: 11px; COLOR: #000066; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial; TEXT-ALIGN: right
+}
+.s:hover {
+	FONT-SIZE: 11px; COLOR: #000066; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial; TEXT-ALIGN: right
+}
+.simple {
+	FONT-SIZE: 11px; COLOR: #000066; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial
+}
+.simple:hover {
+	FONT-SIZE: 11px; COLOR: #000066; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial
+}
+.blue {
+	FONT-WEIGHT: bold; FONT-SIZE: 10px; COLOR: blue; FONT-STYLE: normal; FONT-FAMILY: Arial
+}
+.blue:hover {
+	FONT-WEIGHT: bold; FONT-SIZE: 10px; COLOR: blue; FONT-STYLE: normal; FONT-FAMILY: Arial
+}
+.blue11 {
+	FONT-WEIGHT: bold; FONT-SIZE: 11px; COLOR: #336699; FONT-STYLE: normal; FONT-FAMILY: Arial; TEXT-ALIGN: center
+}
+.blue11:hover {
+	FONT-WEIGHT: bold; FONT-SIZE: 11px; COLOR: #336699; FONT-STYLE: normal; FONT-FAMILY: Arial; TEXT-ALIGN: center
+}
+.black {
+	FONT-WEIGHT: bold; FONT-SIZE: 9px; FONT-STYLE: normal; FONT-FAMILY: Arial; TEXT-ALIGN: center
+}
+.black:hover {
+	FONT-WEIGHT: bold; FONT-SIZE: 9px; FONT-STYLE: normal; FONT-FAMILY: Arial; TEXT-ALIGN: center
+}
+.zag {
+	FONT-WEIGHT: bold; FONT-SIZE: 9px; COLOR: #ffffff; FONT-FAMILY: Verdana, Arial, Tahoma
+}
+.zag:hover {
+	FONT-WEIGHT: bold; FONT-SIZE: 9px; COLOR: #ffffff; FONT-FAMILY: Verdana, Arial, Tahoma
+}
+.normb {
+	FONT-WEIGHT: bold; FONT-SIZE: 8pt; COLOR: #000000; FONT-FAMILY: ms sans serif, arial
+}
+.norm {
+	FONT-SIZE: 11px; COLOR: #000000; FONT-FAMILY: tahoma, ms sans serif, arial
+}
+.norm1 {
+	FONT-SIZE: 9pt; COLOR: #000000; FONT-FAMILY: tahoma, ms sans serif, arial
+}
+.normbn {
+	FONT-WEIGHT: bold; FONT-SIZE: 11px; COLOR: #000000; FONT-FAMILY: ms sans serif, arial; TEXT-DECORATION: none
+}
+.normn {
+	FONT-SIZE: 11px; COLOR: #000000; FONT-FAMILY: tahoma, ms sans serif, arial; TEXT-DECORATION: none
+}
+.in1 {
+	BORDER-RIGHT: #666666 1px solid; BORDER-TOP: #666666 1px solid; FONT-SIZE: 11px; BORDER-LEFT: #666666 1px solid; COLOR: #000000; BORDER-BOTTOM: #666666 1px solid; FONT-FAMILY: arial,  ms sans serif, tahoma,
+}
+.in {
+	FONT-SIZE: 11px; FONT-FAMILY: verdana, arial, geneva, ms sans serif, tahoma
+}
+.inold {
+	BORDER-RIGHT: #0066cc 2px solid; BORDER-TOP: #003399 2px solid; FONT-SIZE: 11px; BACKGROUND: #e6f0f6; BORDER-LEFT: #003399 2px solid; COLOR: #000000; BORDER-BOTTOM: #0066cc 2px solid; FONT-FAMILY: verdana, arial, geneva,  ms sans serif, tahoma,
+}
+.in2 {
+	FONT-SIZE: 11px; BACKGROUND: #e6f0f6; COLOR: #000000; FONT-FAMILY: verdana, arial, geneva,  ms sans serif, tahoma,
+}
+.text1 {
+	FONT-SIZE: 9pt; FONT-FAMILY: MS sans serif, Arial, Times
+}
+.6apka {
+	FONT-WEIGHT: bold; FONT-SIZE: 12pt; FONT-FAMILY: MS sans serif, Arial, Times
+}
+.s1 {
+	FONT-WEIGHT: bold;
+	FONT-SIZE: 14px;
+	COLOR: Navy;
+	FONT-STYLE: normal;
+	FONT-FAMILY: Verdana, Arial, Tahoma;
+	TEXT-ALIGN: right;
+	TEXT-DECORATION: none
+}
+.s1:hover {
+	FONT-WEIGHT: bold;
+	FONT-SIZE: 14px;
+	COLOR: Navy;
+	FONT-STYLE: normal;
+	FONT-FAMILY: Verdana, Arial, Tahoma;
+	TEXT-ALIGN: right;
+	TEXT-DECORATION: none
+}
+.s2 {
+	FONT-WEIGHT: bold; FONT-SIZE: 11px; COLOR: #336699; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial, Tahoma; TEXT-DECORATION: none
+}
+.s2:hover {
+	COLOR: #003366; TEXT-DECORATION: underline
+}
+.s3 {
+	FONT-WEIGHT: normal; FONT-SIZE: 11px; COLOR: #000000; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial, Tahoma
+}
+.s3:hover {
+	FONT-WEIGHT: normal; FONT-SIZE: 11px; COLOR: #000000; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial, Tahoma
+}
+.s4 {
+	FONT-WEIGHT: bold;
+	FONT-SIZE: 11px;
+	COLOR: #8A2BE2;
+	FONT-STYLE: normal;
+	FONT-FAMILY: Verdana, Arial, Tahoma;
+	TEXT-DECORATION: none
+}
+.s4:hover {
+	FONT-WEIGHT: bold;
+	FONT-SIZE: 11px;
+	COLOR: #8A2BE2;
+	FONT-STYLE: normal;
+	FONT-FAMILY: Verdana, Arial, Tahoma;
+	TEXT-DECORATION: none;
+}
+.s5 {
+	FONT-WEIGHT: normal; FONT-SIZE: 10px; COLOR: #000000; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial, Tahoma
+}
+.s5:hover {
+	FONT-WEIGHT: normal; FONT-SIZE: 10px; COLOR: #000000; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial, Tahoma
+}
+.s5b {
+	FONT-WEIGHT: normal; FONT-SIZE: 10px; COLOR: #000066; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial, Tahoma
+}
+.s5b:hover {
+	FONT-WEIGHT: normal; FONT-SIZE: 10px; COLOR: #000066; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial, Tahoma
+}
+.s6 {
+	FONT-WEIGHT: bold; FONT-SIZE: 12px; COLOR: #000000; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial, Tahoma; TEXT-DECORATION: none
+}
+.s6:hover {
+	FONT-WEIGHT: bold; FONT-SIZE: 12px; COLOR: #000000; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial, Tahoma; TEXT-DECORATION: none
+}
+.s6l {
+	FONT-WEIGHT: bold; FONT-SIZE: 12px; COLOR: #336699; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial, Tahoma; TEXT-DECORATION: underline
+}
+.s6l:hover {
+	FONT-WEIGHT: bold; FONT-SIZE: 12px; COLOR: #336699; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial, Tahoma; TEXT-DECORATION: underline
+}
+.s7 {
+	FONT-WEIGHT: normal; FONT-SIZE: 13px; COLOR: #000000; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial, Tahoma
+}
+.s7:hover {
+	FONT-WEIGHT: normal; FONT-SIZE: 13px; COLOR: #000000; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial, Tahoma
+}
+.s8 {
+	FONT-WEIGHT: normal; FONT-SIZE: 13px; COLOR: #0066cc; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial, Tahoma; TEXT-DECORATION: underline
+}
+.s8:hover {
+	FONT-WEIGHT: normal; FONT-SIZE: 13px; COLOR: #0066cc; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial, Tahoma; TEXT-DECORATION: none
+}
+.s8l {
+	FONT-WEIGHT: bold; FONT-SIZE: 13px; COLOR: blue; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial, Tahoma
+}
+.s8l:hover {
+	FONT-WEIGHT: bold; FONT-SIZE: 13px; COLOR: blue; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial, Tahoma
+}
+.s9 {
+	FONT-SIZE: 12px; COLOR: #000000; FONT-FAMILY: tahoma, verdana, tahoma, arial
+}
+.s9:hover {
+	FONT-SIZE: 12px; COLOR: #000000; FONT-FAMILY: tahoma, verdana, tahoma, arial
+}
+.sl {
+	FONT-WEIGHT: bold;
+	FONT-SIZE: 11px;
+	COLOR: Red;
+	FONT-STYLE: normal;
+	FONT-FAMILY: Verdana, Arial
+}
+.sl:hover {
+	FONT-WEIGHT: bold;
+	FONT-SIZE: 11px;
+	COLOR: Red;
+	FONT-STYLE: normal;
+	FONT-FAMILY: Verdana, Arial
+}
+
+.sm {
+	FONT-SIZE: 15px;
+	COLOR: Black;
+	FONT-STYLE: normal;
+	FONT-FAMILY: "Lucida Console";
+	FONT-WEIGHT: bold;
+}
+.sm:hover {
+	FONT-SIZE: 15px;
+	COLOR: White;
+	FONT-STYLE: normal;
+	FONT-FAMILY: Lucida Console";
+	FONT-WEIGHT: bold;
+}
+
+
+.s1small {
+	FONT-SIZE: 11px; COLOR: #9399a8; FONT-FAMILY: Ms sans serif, Arial, Verdana, Tahoma; TEXT-DECORATION: underline
+}
+.s1small:hover {
+	FONT-SIZE: 11px; COLOR: #9399a8; FONT-FAMILY: Ms sans serif, Arial, Verdana, Tahoma; TEXT-DECORATION: none
+}
+.tab {
+	FONT-WEIGHT: normal;
+	FONT-SIZE: 11px;
+	COLOR: Blue;
+	FONT-STYLE: normal;
+	FONT-FAMILY: Verdana, Arial, Tahoma;
+	TEXT-ALIGN: right;
+	TEXT-DECORATION: none
+}
+.tab:hover {
+	FONT-WEIGHT: normal;
+	FONT-SIZE: 11px;
+	COLOR: Blue;
+	FONT-STYLE: normal;
+	FONT-FAMILY: Verdana, Arial, Tahoma;
+	TEXT-ALIGN: right;
+	TEXT-DECORATION: none
+}
+.descr {
+	FONT-SIZE: 11px;
+	COLOR: Blue;
+	FONT-FAMILY: tahoma, ms sans serif, arial;
+	TEXT-DECORATION: none;
+}
+
+.descr:hover {
+	FONT-SIZE: 11px;
+	COLOR: Red;
+	FONT-FAMILY: tahoma, ms sans serif, arial;
+	TEXT-DECORATION: none;
+}
+
+.slink1 {
+	FONT-WEIGHT: bold;
+	FONT-SIZE: 11px;
+	COLOR:  #336699;;
+	FONT-STYLE: normal;
+	FONT-FAMILY: Verdana, Arial, Tahoma;
+	TEXT-DECORATION: none;
+}
+.slink1:hover {
+	FONT-WEIGHT: bold;
+	FONT-SIZE: 11px;
+	COLOR: White;
+	FONT-STYLE: normal;
+	FONT-FAMILY: Verdana, Arial, Tahoma;
+	TEXT-DECORATION: none;
+}
+
+/* -------------------------------------------------------- */
+
+.required { color: red; }
+.error { color: red; }
+
+
+
+
