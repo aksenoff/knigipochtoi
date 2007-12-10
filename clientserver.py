@@ -5,38 +5,93 @@ from pony.main import *
 
 use_autoreload()
 
-@printhtml
+def connect():
+    return sqlite.connect('dbase.sqlite')
+
 def header(title=u'Книги-почтой'):
-    print u'<title>%s</title>' % title
-    print u'<h1>%s</h1>' % title
+    return html( u'''<title>$title</title>
+    <LINK href="text.css" type=text/css rel=stylesheet>
+    <body bgcolor="#d3d3d3" topmargin="0" marginwidth="0" marginheight="0" vlink="#0000ff" text="#000000">
+    <table width=100% border="0" cellpadding="0" cellspacing="0" bgcolor="#d3d3d3" >
+    <tr>
+        <td align="center">Здесь будет рисунок (может быть)</td>
+    </tr>
+    <tr><td align="center" >&nbsp;&nbsp;&nbsp;<font color="#778899"><h1>$title</h1></font></td></tr>
+    </table>
+
+    <table bgcolor="#fffff0" width=100% border="0" cellpadding="0" cellspacing="5">
+    <tr>
+     ''')
+
+def footer():
+    return html(u'''
+    </tr>
+    </table>
+
+    <table width=100% height="50" border="0" cellpadding="0" cellspacing="0" bgcolor="#d3d3d3">
+    <tr>
+        <td align=center ><font size=4 color=green>Copyright 2007<font><p>Возврат <a href="/">на гл. страницу</a></td>
+    </tr>
+    </table>
+    </body>
+     ''')
+
+def sidebar():
+    return html(u'''
+    <td align="center" valign="top" width="250" bgcolor="#d3d3d3">
+       <h3 class="sm">Левая колонка</h3>
+        $login_component()
+        $if(get_session().get('is_manager')) { <p>$link(add_book)</p>  }
+    </td>
+    ''')
 
 @printhtml
-def footer():
-    print u'<p>Возврат <a href="/">на гл. страницу</a>'
+def login_component():
+    user = get_user()
+    if user is not None:
+        print u'<h3>Пользователь:</h3>'
+        print u'<p>%s</p>' % get_session()['login']
+        print u'<p>%s</p>' % link(logout)
+        return
+
+    f = Form(name='login')
+    f.login = Text(u'Логин', size=15)
+    f.password = Password(u'Пароль', size=15)
+    f.submit = Submit(u'Вход!')
+
+    if f.is_submitted:
+        if not f.login.value: f.login.error_text = u'Логин не задан'
+        elif not f.password.value: f.password.error_text = u'Пароль не задан'
+        else:
+            db = connect()
+            row = db.execute('select id, pass, is_manager from Users where login = ?', [ f.login.value ]).fetchone()
+            if row is None: f.login.error_text = u'Неверный логин'
+            else:
+                user_id, password, is_manager = row
+                hash = sha.new(f.password.value).hexdigest()
+                if password != hash:
+                    f.password.error_text = u'Неверный пароль'
+                else:
+                    set_user(user_id)
+                    session = get_session()
+                    session['login'] = f.login.value
+                    session['is_manager'] = is_manager
+                    print u'<h3>Текущий пользователь:</h3>'
+                    print u'<p class="blink">%s</p>' % f.login.value
+                    print u'<p>%s</p>' % link(logout)
+                    return
+    print f
+    print link(register)
     
 @http('/')
 @printhtml
 def index():
     print header()
-    print u'<body BGCOLOR="#E7E3E7">'
+    print sidebar()
+    print u'<td><h2>Свежие поступления:</h2>'
     print u"<h1>Добро пожаловать в наш магазин!</h1>"
-    print u"Выберите интересующее вас действие:"
-    print "<ul>"
-    print "<li>%s</li>" % link(u"Регистрация", register)
-    print "</ul>"
-    user = get_user()
-    session = get_session()
-    print html(u"""$if (user)
-                        {
-                   <h2>Здравствуйте, $user!</h2>
-              <p>session['x'] = $(session['x']) 
-              <p>$link(u"Выйти", logout)
-            }
-            $else
-            {
-              <h2>Вы не вошли</h2>
-              <p>$link(u"Войти", login)
-            }""")
+    print u'Выберите интересующее вас действие:</td>'
+    print footer()
 
 @http('/register')
 @printhtml
@@ -47,7 +102,7 @@ def register():
     f.country = Select('Select your country',required=True,options=['','USA','Australia','Russia'])
     f.ok=Submit(value=u'Далее')
     if f.country.value in ('USA','Australia'):
-        f.secure = True # Make multi-step form secure only on last step
+        f.secure = True
         f.state = Select('Select your state', True)
         if f.country.value == 'USA':
             f.state.options = [ '', 'Alabama', 'New York', 'Virginia' ]
