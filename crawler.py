@@ -1,9 +1,11 @@
+# -*- coding:cp1251 -*-
+
 import re, urllib
 #from lxml import etree
 from BeautifulSoup import BeautifulSoup, NavigableString
 
 from pysqlite2 import dbapi2 as sqlite
-con = sqlite.connect('/dbase3.sqlite')
+con = sqlite.connect('dbase3.sqlite')
 
 site = 'http://books.filosofia.ru/'
 
@@ -25,7 +27,7 @@ for href, category in categories.items():
         print
     except: category = u'Неизвестная категория'
 
-    row = con.execute(u'select * from Категория where name = ?', [category]).fetchone()
+    row = con.execute(u'select * from Категория where Название = ?', [category]).fetchone()
     if row is not None: continue
 
     con.execute(u'insert or ignore into Категория values(?)', [category])

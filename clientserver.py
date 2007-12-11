@@ -67,7 +67,7 @@ def login():
         elif not f.password.value: f.password.error_text = u'Укажите пароль!'
         else:
             db = connect()
-            row = db.execute('select id, Пароль from Клиент where Логин = ?', [ f.login.value ]).fetchone()
+            row = db.execute(u'select id, Пароль from Клиент where Логин = ?', [ f.login.value ]).fetchone()
             if row is None: f.login.error_text = u'Неверный логин'
             else:
                 user_id, password = row
@@ -156,27 +156,28 @@ def register():
     if f.is_valid:
         ok = True
         con = connect()
-        row = con.execute('select id from Клиент where Логин = ?', [ f.login.value ]).fetchone()
+        row = con.execute(u'select id from Клиент where Логин = ?', [ f.login.value ]).fetchone()
         if row is not None:
             f.login.error_text = u'Такой логин уже занят'
             ok = False
         if ok:
             hash = sha.new(f.password.value).hexdigest()
-            cursor = con.execute('insert into Клиент(Логин, Пароль, Имя, Фамилия, email) values(?, ?, ?, ?, ?)',
+            cursor = con.execute(u'insert into Клиент(Логин, Пароль, Имя, Фамилия, email) values(?, ?, ?, ?, ?)',
                                  [ f.login.value, hash, f.first_name.value, f.last_name.value, f.email.value ])
             user_id = cursor.lastrowid
             set_user(user_id)
-            get_session()['login'] = f.login.value
+            http.session.login = f.login.value
             con.commit()
             raise HttpRedirect(url(register2))
     print u"Заполните необходимые регистрационные данные:"
     print f
     print footer()
 
+@http
 @printhtml
 def register2():
-    print header(u"Добро пожаловать, %s" % login)
-    print u'<center><h1>Поздравляем, $login!</h1></center>'
+    print header(u"Добро пожаловать, %s" % http.session.login)
+    print u'<center><h1>Поздравляем, %s!</h1></center>' % http.session.login
     print u'<center><h2>Вы успешно зарегистрированы!</h2></center>'
     print footer()    
 
@@ -185,10 +186,10 @@ def register2():
 def logout():
     print header(u"Выход")
     print u'<body BGCOLOR="#E7E3E7">'
-    user = get_user()
+    login = http.session.login
     set_user(None)
-    print html(u"""$if (user) { <h1>До встречи, $user!</h1>}
-                <h2>Вы вышли</h2>""")
+    print html(u"""<h1>До встречи, $login!</h1>
+                   <h2>Вы вышли</h2>""")
     print footer()
 
 @http('/books/$book_id')
@@ -219,7 +220,7 @@ def bookinfo(book_id):
 @http('/images/books/$book_id', type='image/jpg')
 def bookimage(book_id):
     con = connect()
-    row = con.execute('select Обложка from Книга where id = ?', [ book_id ]).fetchone()
+    row = con.execute(u'select Обложка from Книга where id = ?', [ book_id ]).fetchone()
     if row is None: raise Http404
     return str(row[0])
 
