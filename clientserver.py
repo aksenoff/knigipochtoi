@@ -2,6 +2,7 @@
 
 from pony.thirdparty import sqlite
 from pony.main import *
+from math import ceil
 from pony.web import HttpRedirect
 import sha
 
@@ -10,16 +11,16 @@ use_autoreload()
 def connect():
     return sqlite.connect('dbase3.sqlite')
 
-def header(title=u'Книги-почтой'):
+def header(title=u'Вы находитесь на Книги-почтой.ru'):
     return html( u'''<title>$title</title>
     <LINK href="text.css" type=text/css rel=stylesheet>
     <body bgcolor="#d3d3d3" topmargin="1" marginwidth="10" marginheight="10" vlink="#0000ff" text="#000000">
-    <table width=100% border="1" cellpadding="1" cellspacing="1" bgcolor="#d3d3d3" >
+    <table width=100% border="0" cellpadding="1" cellspacing="1" bgcolor="#d3d3d3" >
     <tr>
-        <td align="center">Здесь будет рисунок (может быть)</td>
+        <td align="center"><a href="http://localhost:8080"><img src="/static/logo.jpg" border=0></a></td>
     </tr>
     <tr>
-        <td align="center" >&nbsp;&nbsp;&nbsp;<font color="#777777"><h1>$title</h1></font></td>
+        <td align="center" ><font color="#777777"><h1>$title</h1></font></td>
     </tr>
     </table>
 
@@ -33,18 +34,17 @@ def footer():
     </table>
     <table width=100% height="50" border="1" cellpadding="0" cellspacing="0" bgcolor="#d3d3d3">
     <tr>
-        <td width="300"><img src="/static/python.jpg"></td><td align=center ><font size=4 color=green>Copyright 2007<font><p>Возврат <a href="/">на гл. страницу</a></td>
+        <td width="300"><img src="/static/python.jpg"></td><td align=center ><font size=4 color=green>Copyright 2007 Aksenov A. & Solovieva      T.<font><p>Возврат <a href="/">на гл. страницу</a></td>
     </tr>
     </table>
     </body>
      ''')
 
-def sidebar():
+def sidebar(cat_id=0, book_id=0):
     return html(u'''
     <td align="left" valign="top" width="300" bgcolor="#fff0ff">
-       
         $login()
-        $if(get_session().get('is_manager')) { <p>$link(add_book)</p>  }
+	$categories(cat_id, book_id)
     </td>
     ''')
 
@@ -87,24 +87,58 @@ def login():
     print '<img src="/static/hi.gif"><br>'
     print link(u'Исправьте это!',register)
     
-@http('/')
+@http('/?p=$pn')
 @printhtml
-def index():
+def index(pn=0):
+    pn=int(pn)
     con = connect()
-    cursor = con.execute(u'select id, ISBN, Название, Автор, Год_издания, Обложка, Аннотация from Книга limit 20')
+    cursor = con.execute(u'select id, ISBN, Название, Автор, Год_издания, Обложка, Аннотация from Книга limit 20 offset ?',[pn*20])
     print html(u'''
     $header()
     $sidebar()
     <td align="left" valign="top"><h1>Добро пожаловать в наш магазин!</h1>
     <h2>Ознакомьтесь с ассортиментом:</h2>
+    <center>$pages(pn)</center>
     $for(book_id, ISBN, title, authors, year, image, description in cursor) {
     <h3>$link(title, bookinfo, book_id)</h3>
-	$if(image is None){<img src="/static/nocover.gif" width=100 height=100>}$else{<img src="$url(bookimage, book_id)">}    
-    <h4 class="s1">$authors</h4>
+	$if(image is None){<a href="http://localhost:8080$url(bookinfo, book_id)"><img src="/static/nocover.gif" width=100 height=100 border=0></a>}
+	$else{<a href="http://localhost:8080$url(bookinfo, book_id)"><img src="$url(bookimage, book_id)" border=0></a>}    
+    $if(authors is None){<h4 class="s1">Нету афтара</h4>}$else{<h4 class="s1">$authors</h4>}
     <strong>$year</strong>
-    <div class="description">$description</div>}    
+    <div class="description">$description</div><hr>}
+       <center>$pages(pn)</center>
     </td>
+ 
     $footer()''')
+
+@http('/?c=$cat_id&p=$pn')
+def cat_index(cat_id, pn=0):
+    cat_id = int(cat_id)
+    pn = int(pn)
+    con = connect()
+    cat_name = con.execute(u'select Название from Категория where rowid=?', [ cat_id ]).fetchone()[0]
+    cursor = con.execute(u'select id, ISBN, Название, Автор, Год_издания, Обложка, Аннотация from Книга where Категория=? limit 20 offset ?',
+                         [ cat_name, pn*20 ])
+    return html(u'''
+    $header($cat_name)
+    $sidebar($cat_id)
+
+    <td valign=top>
+    <br>
+
+    <center>$pages(pn, cat_id)</center>
+    $for(book_id, ISBN, title, authors, year, image, description in cursor) {
+    <h3>$link(title, bookinfo, book_id)</h3>
+	$if(image is None){<a href="http://localhost:8080$url(bookinfo, book_id)"><img src="/static/nocover.gif" width=100 height=100 border=0></a>}
+	$else{<a href="http://localhost:8080$url(bookinfo, book_id)"><img src="$url(bookimage, book_id)" border=0></a>}    
+    $if(authors is None){<h4 class="s1">Нету афтара</h4>}$else{<h4 class="s1">$authors</h4>}
+    <strong>$year</strong>
+    <div class="description">$description</div><hr>}    
+
+    <center>$pages(pn, cat_id)</center>
+
+    </td>
+    $footer()''')    
 
 @http('/register')
 @printhtml
@@ -166,18 +200,38 @@ def register():
                                  [ f.login.value, hash, f.first_name.value, f.last_name.value, f.email.value ])
             user_id = cursor.lastrowid
             set_user(user_id)
-            http.session.login = f.login.value
+            get_session()['login'] = f.login.value
             con.commit()
             raise HttpRedirect(url(register2))
     print u"Заполните необходимые регистрационные данные:"
     print f
     print footer()
 
+@printhtml
+def pages(pn, cat_id=None):
+    con = connect()
+    if cat_id is None:
+        nbooks = con.execute(u'select count(*) from Книга ').fetchone()[0]
+        if nbooks<21:return
+        npages = int(ceil(nbooks / 20))
+        for i in range(1, npages+2):
+            if i == (pn+1): print '<strong>[%d]</strong>' % i
+            else: print '[%s] ' % link(str(i), index, i-1)
+    else:
+        cat_name = con.execute(u'select Название from Категория where rowid=?', [cat_id]).fetchone()[0]
+        nbooks = con.execute(u'select count(*) from Книга where Категория=?', [cat_name]).fetchone()[0]
+        if nbooks<21:return
+        npages = int(ceil(nbooks / 20))
+        for i in range(1, npages+2):
+            if i == (pn+1): print '<strong>[%d]</strong>' % i
+            else: print '[%s] ' % link(str(i), cat_index, cat_id, i-1)
+    print '<hr>'            
+
 @http
 @printhtml
 def register2():
-    print header(u"Добро пожаловать, %s" % http.session.login)
-    print u'<center><h1>Поздравляем, %s!</h1></center>' % http.session.login
+    print header(u"Добро пожаловать, %s" % login)
+    print u'<center><h1>Поздравляем, $login!</h1></center>'
     print u'<center><h2>Вы успешно зарегистрированы!</h2></center>'
     print footer()    
 
@@ -186,34 +240,31 @@ def register2():
 def logout():
     print header(u"Выход")
     print u'<body BGCOLOR="#E7E3E7">'
-    login = http.session.login
+    user = get_user()
     set_user(None)
-    print html(u"""<h1>До встречи, $login!</h1>
-                   <h2>Вы вышли</h2>""")
+    print html(u"""$if (user) { <h1>До встречи, $user!</h1>}
+                <h2>Вы вышли</h2>""")
     print footer()
 
 @http('/books/$book_id')
 def bookinfo(book_id):
     con = connect()
-    row = con.execute(u'select ISBN, Название, Автор, Год_издания, Обложка, Аннотация from Книга where id = ?', [book_id]).fetchone()
+    row = con.execute(u'select ISBN, Название, Автор, Год_издания, Обложка, Аннотация, Категория, Цена, Переплет from Книга where id = ?', [book_id]).fetchone()
     if row is None: raise Http404
-    ISBN, title, author, year, image, description = row
+    ISBN, title, author, year, image, description, cat, price, cover = row
     return html(u'''$header(u'Информация о книге "%s"' % title)
     $sidebar()
-    <td>
-
-    $if(image is None){
-        <img src="/static/nocover.gif" width=100 height=100>
-    }$else{
-        <img src="$url(bookimage, book_id)">
-    }
-    
-    <h4>$author</h4>
+    <td valign=top>
+    $if(image is None){<img src="/static/nocover.gif" width=100 height=100>}
+    $else{<img src="$url(bookimage, book_id)">}    
+    <p>$if(author is None){Нет автора}$else{<h4>$author</h4>}<br>
     <strong>$year</strong>
-    <div class="description">$description</div>
-
+    <p><strong>Аннотация:</strong>
+    <div class="description">$description</div><br>
+    <strong>Переплет: </strong>$if(cover is None){нет сведений}$else{$cover}<br>
+    <strong>Категория: </strong>$if(cat is None){нет}$else{$cat}<br>
+    <strong>Цена: </strong>$if(price is None){договорная}$else{$price р.}<br>
     $add(book_id)
-
     <td>
     $footer()''')
 
@@ -224,8 +275,6 @@ def bookimage(book_id):
     if row is None: raise Http404
     return str(row[0])
 
-
-
 @printhtml
 def add(book_id):
     fc = Form()
@@ -234,14 +283,55 @@ def add(book_id):
     if fc.is_valid:
         con = connect()
         #добавление в корзину
-
+ 
     if user_id is None:
         print u'<p>У Вас не будет корзины, пока Вы не зарегистрируетесь'
     elif fc.is_valid:
         print u'<p>Книга была добавлена в Вашу корзину!</p>'
         print fc
     else:
-        print fc    
+        print fc
+	
+@printhtml
+def basket(book_id):
+    book_id = int(book_id)
+    basket = http.session.basket or set()
+    if book_id not in basket:
+        f = FormaDobavit()
+    else:
+        f = FormaUdalit()
+    f.book.value = book_id
+    print f
+    
+class FormaDobavit(Form):
+    book = Hidden()
+    submit = Submit(u'Добавить в корзину!')
+    def on_submit(self):
+        if http.session.basket is None:
+            http.session.basket = set()
+        http.session.basket.add(int(self.book.value))
+
+class FormaUdalit(Form):
+    book = Hidden()
+    submit = Submit(u'Удалить из корзины!')
+    def on_submit(self):
+        if http.session.basket is None:
+            http.session.basket = set()
+        http.session.basket.discard(int(self.book.value))
+
+@printhtml
+def categories(current_cat_id, current_book_id):
+    print u'<h3 class="sm"></h3>'    
+    print u'<hr><p><h3 class="sm">Выберите категориЮ:</h3><hr>'
+    if current_cat_id == 0 and current_book_id == 0:
+          print u'<p>Все категории'
+    else: print u'<p>%s' % link(u'Все категории', index)
+    print '<hr>'
+    con = connect()
+    for [cat_id, cat_name] in con.execute(u'Select rowid, Название from Категория'):
+        if cat_id == current_cat_id: print '<p>%s' % cat_name
+        else: print '<p>%s' % link(cat_name, cat_index, cat_id)
+        print '<hr>'
 
 start_http_server('localhost:8080')
 
