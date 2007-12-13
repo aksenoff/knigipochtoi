@@ -17,7 +17,7 @@ def header(title=u'Вы находитесь на Книги-почтой.ru'):
     <body bgcolor="#d3d3d3" topmargin="1" marginwidth="10" marginheight="10" vlink="#0000ff" text="#000000">
     <table width=100% border="0" cellpadding="1" cellspacing="1" bgcolor="#d3d3d3" >
     <tr>
-        <td align="center"><a href="http://localhost:8080"><img src="/static/logo.jpg" border=0></a></td>
+        <td align="center"><a href="$url(index)"><img src="/static/logo.jpg" border=0></a></td>
     </tr>
     <tr>
         <td align="center" ><font color="#777777"><h1>$title</h1></font></td>
@@ -92,7 +92,8 @@ def login():
 def index(pn=0):
     pn=int(pn)
     con = connect()
-    cursor = con.execute(u'select id, ISBN, Название, Автор, Год_издания, Обложка, Аннотация from Книга limit 20 offset ?',[pn*20])
+    cursor = con.execute(u'select id, ISBN, Название, Автор, Год_издания, Обложка, Аннотация from Книга '
+                         u'order by Случайное_число limit 20 offset ?',[pn*20])
     print html(u'''
     $header()
     $sidebar()
@@ -101,11 +102,11 @@ def index(pn=0):
     <center>$pages(pn)</center>
     $for(book_id, ISBN, title, authors, year, image, description in cursor) {
     <h3>$link(title, bookinfo, book_id)</h3>
-	$if(image is None){<a href="http://localhost:8080$url(bookinfo, book_id)"><img src="/static/nocover.gif" width=100 height=100 border=0></a>}
-	$else{<a href="http://localhost:8080$url(bookinfo, book_id)"><img src="$url(bookimage, book_id)" border=0></a>}    
+    $if(image is None){<a href="$url(bookinfo, book_id)"><img src="/static/nocover.gif" width=100 height=100 border=0></a>}
+    $else{<a href="$url(bookinfo, book_id)"><img src="$url(bookimage, book_id)" border=0></a>}    
     $if(authors is None){<h4 class="s1">Нету афтара</h4>}$else{<h4 class="s1">$authors</h4>}
     <strong>$year</strong>
-    <div class="description">$description</div><hr>}
+    <div class="description">$html(description)</div><hr>}
        <center>$pages(pn)</center>
     </td>
  
@@ -213,16 +214,16 @@ def pages(pn, cat_id=None):
     if cat_id is None:
         nbooks = con.execute(u'select count(*) from Книга ').fetchone()[0]
         if nbooks<21:return
-        npages = int(ceil(nbooks / 20))
-        for i in range(1, npages+2):
+        npages = (nbooks / 20) + 1
+        for i in range(1, npages+1):
             if i == (pn+1): print '<strong>[%d]</strong>' % i
             else: print '[%s] ' % link(str(i), index, i-1)
     else:
         cat_name = con.execute(u'select Название from Категория where rowid=?', [cat_id]).fetchone()[0]
         nbooks = con.execute(u'select count(*) from Книга where Категория=?', [cat_name]).fetchone()[0]
         if nbooks<21:return
-        npages = int(ceil(nbooks / 20))
-        for i in range(1, npages+2):
+        npages = (nbooks / 20) + 1
+        for i in range(1, npages+1):
             if i == (pn+1): print '<strong>[%d]</strong>' % i
             else: print '[%s] ' % link(str(i), cat_index, cat_id, i-1)
     print '<hr>'            
@@ -260,7 +261,7 @@ def bookinfo(book_id):
     <p>$if(author is None){Нет автора}$else{<h4>$author</h4>}<br>
     <strong>$year</strong>
     <p><strong>Аннотация:</strong>
-    <div class="description">$description</div><br>
+    <div class="description">$html(description)</div><br>
     <strong>Переплет: </strong>$if(cover is None){нет сведений}$else{$cover}<br>
     <strong>Категория: </strong>$if(cat is None){нет}$else{$cat}<br>
     <strong>Цена: </strong>$if(price is None){договорная}$else{$price р.}<br>
