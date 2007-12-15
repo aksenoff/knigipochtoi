@@ -52,9 +52,9 @@ def sidebar(cat_id=0, book_id=0):
 def login():
     user = get_user()
     if user is not None:
-        print u'<h3>Пользователь:</h3>'
-        print u'<p>%s</p>' % get_session()['login']
-        print u'<p>%s</p>' % link(logout)
+        print u'<h3>Вы вошли как:</h3>'
+        print u'<p class="blink">%s</p>' % get_session()['login']
+        print u'<p>%s</p>' % link(u'Выйти',logout)
         return
     print u'<h3 class="sm">Вход для зарегистрированных пользователей:</h3>'
     f = Form(name='login')
@@ -86,12 +86,19 @@ def login():
     print u'Еще не зарегистрированы?<br>'
     print '<img src="/static/hi.gif"><br>'
     print link(u'Исправьте это!',register)
+
+def randbooks():
+    con=connect()
+    con.execute(u'update Книга set Случайное_число=random()')
+    con.commit()
     
 @http('/?p=$pn')
 @printhtml
 def index(pn=0):
     pn=int(pn)
     con = connect()
+    randbooks()
+    cursor = con.execute(u'select id, ISBN, Название, Автор, Год_издания, Обложка, Аннотация from Книга limit 20 offset ?',[pn*20])
     cursor = con.execute(u'select id, ISBN, Название, Автор, Год_издания, Обложка, Аннотация from Книга '
                          u'order by Случайное_число limit 20 offset ?',[pn*20])
     print html(u'''
@@ -101,12 +108,11 @@ def index(pn=0):
     <h2>Ознакомьтесь с ассортиментом:</h2>
     <center>$pages(pn)</center>
     $for(book_id, ISBN, title, authors, year, image, description in cursor) {
-    <h3>$link(title, bookinfo, book_id)</h3>
-    $if(image is None){<a href="$url(bookinfo, book_id)"><img src="/static/nocover.gif" width=100 height=100 border=0></a>}
-    $else{<a href="$url(bookinfo, book_id)"><img src="$url(bookimage, book_id)" border=0></a>}    
-    $if(authors is None){<h4 class="s1">Нету афтара</h4>}$else{<h4 class="s1">$authors</h4>}
-    <strong>$year</strong>
-    <div class="description">$html(description)</div><hr>}
+    <h3>$link(html(title), bookinfo, book_id)</h3>
+    $if(image is None){<div align=center><a href="$url(bookinfo, book_id)"><img src="/static/nocover.gif" width=100 height=100 border=0></a></div>}
+    $else{<div align=center><a href="$url(bookinfo, book_id)"><img src="$url(bookimage, book_id)" border=0></a></div>}    
+    $if(authors is None){<h4 class="s1">Нет автора</h4>}$else{<h4 class="s1">$authors</h4>}
+    <strong>$year</strong><hr>}
        <center>$pages(pn)</center>
     </td>
  
@@ -129,13 +135,11 @@ def cat_index(cat_id, pn=0):
 
     <center>$pages(pn, cat_id)</center>
     $for(book_id, ISBN, title, authors, year, image, description in cursor) {
-    <h3>$link(title, bookinfo, book_id)</h3>
-	$if(image is None){<a href="http://localhost:8080$url(bookinfo, book_id)"><img src="/static/nocover.gif" width=100 height=100 border=0></a>}
-	$else{<a href="http://localhost:8080$url(bookinfo, book_id)"><img src="$url(bookimage, book_id)" border=0></a>}    
-    $if(authors is None){<h4 class="s1">Нету афтара</h4>}$else{<h4 class="s1">$authors</h4>}
-    <strong>$year</strong>
-    <div class="description">$description</div><hr>}    
-
+    <h3>$link(html(title), bookinfo, book_id)</h3>
+	$if(image is None){<div align=center><a href="http://localhost:8080$url(bookinfo, book_id)"><img src="/static/nocover.gif" width=100 height=100 border=0></a></div>}
+	$else{<div align=center><a href="$url(bookinfo, book_id)"><img src="$url(bookimage, book_id)" border=0></a></div>}    
+    $if(authors is None){<h4 class="s1">Нет автора</h4>}$else{<h4 class="s1">$authors</h4>}
+    <strong>$year</strong><hr>}   
     <center>$pages(pn, cat_id)</center>
 
     </td>
@@ -231,8 +235,9 @@ def pages(pn, cat_id=None):
 @http
 @printhtml
 def register2():
+    login=get_session()['login']
     print header(u"Добро пожаловать, %s" % login)
-    print u'<center><h1>Поздравляем, $login!</h1></center>'
+    print u'<center><h1>Поздравляем, %s!</h1></center>' %login
     print u'<center><h2>Вы успешно зарегистрированы!</h2></center>'
     print footer()    
 
@@ -241,7 +246,7 @@ def register2():
 def logout():
     print header(u"Выход")
     print u'<body BGCOLOR="#E7E3E7">'
-    user = get_user()
+    user = get_session()['login']
     set_user(None)
     print html(u"""$if (user) { <h1>До встречи, $user!</h1>}
                 <h2>Вы вышли</h2>""")
@@ -250,10 +255,10 @@ def logout():
 @http('/books/$book_id')
 def bookinfo(book_id):
     con = connect()
-    row = con.execute(u'select ISBN, Название, Автор, Год_издания, Обложка, Аннотация, Категория, Цена, Переплет from Книга where id = ?', [book_id]).fetchone()
+    row = con.execute(u'select ISBN, Название, Автор, Год_издания, Издательство, Обложка, Аннотация, Категория, Цена, Переплет from Книга where id = ?', [book_id]).fetchone()
     if row is None: raise Http404
-    ISBN, title, author, year, image, description, cat, price, cover = row
-    return html(u'''$header(u'Информация о книге "%s"' % title)
+    ISBN, title, author, year, pub, image, description, cat, price, cover = row
+    return html(u'''$header(u'Информация о книге "%s"' % html(title))
     $sidebar()
     <td valign=top>
     $if(image is None){<img src="/static/nocover.gif" width=100 height=100>}
@@ -263,8 +268,9 @@ def bookinfo(book_id):
     <p><strong>Аннотация:</strong>
     <div class="description">$html(description)</div><br>
     <strong>Переплет: </strong>$if(cover is None){нет сведений}$else{$cover}<br>
-    <strong>Категория: </strong>$if(cat is None){нет}$else{$cat}<br>
     <strong>Цена: </strong>$if(price is None){договорная}$else{$price р.}<br>
+    <strong>Категория: </strong>$if(cat is None){нет}$else{$cat}<br>
+    <strong>Издательство: </strong>$if(pub is None){нет}$else{$pub}<br>    
     $add(book_id)
     <td>
     $footer()''')
@@ -323,7 +329,7 @@ class FormaUdalit(Form):
 @printhtml
 def categories(current_cat_id, current_book_id):
     print u'<h3 class="sm"></h3>'    
-    print u'<hr><p><h3 class="sm">Выберите категориЮ:</h3><hr>'
+    print u'<hr><p><h3 class="sm">Выберите категорию:</h3><hr>'
     if current_cat_id == 0 and current_book_id == 0:
           print u'<p>Все категории'
     else: print u'<p>%s' % link(u'Все категории', index)
