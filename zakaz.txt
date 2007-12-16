@@ -1,0 +1,29 @@
+>>> from pony.main import *
+>>> books = [ [ 'AAA', 123 ], [ 'BBB', 456 ], [ 'CCC', 789 ] ]
+>>> f = Form()
+>>> for book_name, book_id in books:
+... 	setattr(f, 'item_%d' % book_id, Text(book_name, value=1))
+... 	
+>>> print f.html
+<form accept-charset="UTF-8" name="Form" method="POST">
+<input type="hidden" name="_t" value="475ea571:Ti4=:TVtWF3jqGBg=:thZbAKUFcvaVsi4n+Oa3R2lH4aY=">
+<input type="hidden" name="_f" value="Form">
+<table>
+
+<tr class="text-field">
+<th><label for="id_0">AAA<span class="colon">:</span></label></th>
+<td><input type="text" id="id_0" value="1" name="item_123"></td></tr>
+<tr class="text-field">
+<th><label for="id_1">BBB<span class="colon">:</span></label></th>
+<td><input type="text" id="id_1" value="1" name="item_456"></td></tr>
+<tr class="text-field">
+<th><label for="id_2">CCC<span class="colon">:</span></label></th>
+<td><input type="text" id="id_2" value="1" name="item_789"></td></tr>
+<tr><td colspan="2">
+
+<div class="buttons"><input type="submit">
+</div>
+</td></tr></table></form>
+>>> for book_name, book_id in books:
+... 	field = getattr(f, 'item_%d' % book_id, None)
+... 	con.execute('insert into PodrobnostiZakaza values(?, ?, ?)', [ get_user(), book_id, field.value ])
