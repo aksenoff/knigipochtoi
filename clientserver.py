@@ -9,7 +9,7 @@ import sha
 use_autoreload()
 
 def connect():
-    return sqlite.connect('dbase3.sqlite')
+    return sqlite.connect('dbase.sqlite')
 
 def header(title=u'Вы находитесь на Книги-почтой.ru'):
     return html( u'''<title>$title</title>
@@ -86,18 +86,12 @@ def login():
     print u'Еще не зарегистрированы?<br>'
     print '<img src="/static/hi.gif"><br>'
     print link(u'Исправьте это!',register)
-
-def randbooks():
-    con=connect()
-    con.execute(u'update Книга set Случайное_число=random()')
-    con.commit()
     
 @http('/?p=$pn')
 @printhtml
 def index(pn=0):
     pn=int(pn)
     con = connect()
-    randbooks()
     cursor = con.execute(u'select id, ISBN, Название, Автор, Год_издания, Обложка, Аннотация from Книга limit 20 offset ?',[pn*20])
     cursor = con.execute(u'select id, ISBN, Название, Автор, Год_издания, Обложка, Аннотация from Книга '
                          u'order by Случайное_число limit 20 offset ?',[pn*20])
@@ -124,7 +118,7 @@ def cat_index(cat_id, pn=0):
     pn = int(pn)
     con = connect()
     cat_name = con.execute(u'select Название from Категория where rowid=?', [ cat_id ]).fetchone()[0]
-    cursor = con.execute(u'select id, ISBN, Название, Автор, Год_издания, Обложка, Аннотация from Книга where Категория=? limit 20 offset ?',
+    cursor = con.execute(u'select id, ISBN, Название, Автор, Год_издания, Обложка, Аннотация from Книга where Категория=? order by Случайное_число limit 20 offset ?',
                          [ cat_name, pn*20 ])
     return html(u'''
     $header($cat_name)
