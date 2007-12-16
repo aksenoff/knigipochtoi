@@ -269,6 +269,7 @@ def bookinfo(book_id):
     <div class="description">$html(description)</div><br>
     <strong>Переплет: </strong>$if(cover is None){нет сведений}$else{$cover}<br>
     <strong>Цена: </strong>$if(price is None){договорная}$else{$price р.}<br>
+    <strong>ISBN: </strong>$if(ISBN is None){отсутствует}$else{$ISBN}<br>
     <strong>Категория: </strong>$if(cat is None){нет}$else{$cat}<br>
     <strong>Издательство: </strong>$if(pub is None){нет}$else{$pub}<br>    
     $add(book_id)
