@@ -13,7 +13,7 @@ def connect():
 
 def header(title=u'Вы находитесь на Книги-почтой.ru'):
     return html( u'''<title>$title</title>
-    <LINK href="text.css" type=text/css rel=stylesheet>
+    <LINK href="/static/text.css" type=text/css rel=stylesheet>
     <body bgcolor="#d3d3d3" topmargin="1" marginwidth="10" marginheight="10" vlink="#0000ff" text="#000000">
     <table width=100% border="0" cellpadding="1" cellspacing="1" bgcolor="#d3d3d3" >
     <tr>
