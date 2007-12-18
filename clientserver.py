@@ -34,7 +34,7 @@ def footer():
     </table>
     <table width=100% height="50" border="1" cellpadding="0" cellspacing="0" bgcolor="#d3d3d3">
     <tr>
-        <td width="300"><img src="/static/python.jpg"></td><td align=center ><font size=4 color=green>Copyright 2007 Aksenov A. & Solovieva      T.<font><p>Возврат <a href="/">на гл. страницу</a></td>
+        <td width="300"><img src="/static/python.jpg"></td><td align=center ><font size=4 color=green>Copyright 2007 Aksenov A. & Solovieva T.<font><p>Возврат <a href="/">на гл. страницу</a></td>
     </tr>
     </table>
     </body>
@@ -43,7 +43,7 @@ def footer():
 def sidebar(cat_id=0, book_id=0):
     return html(u'''
     <td align="left" valign="top" width="300" bgcolor="#fff0ff">
-        $login()
+    $login()
 	$categories(cat_id, book_id)
     </td>
     ''')
@@ -61,7 +61,6 @@ def login():
     f.login = Text(u'Логин*', size=15)
     f.password = Password(u'Пароль*', size=15)
     f.submit = Submit(u'Войти')
-
     if f.is_submitted:
         if not f.login.value: f.login.error_text = u'Укажите логин!'
         elif not f.password.value: f.password.error_text = u'Укажите пароль!'
@@ -92,9 +91,8 @@ def login():
 def index(pn=0):
     pn=int(pn)
     con = connect()
-    cursor = con.execute(u'select id, ISBN, Название, Автор, Год_издания, Обложка, Аннотация from Книга limit 20 offset ?',[pn*20])
     cursor = con.execute(u'select id, ISBN, Название, Автор, Год_издания, Обложка, Аннотация from Книга '
-                         u'order by Случайное_число limit 20 offset ?',[pn*20])
+                         u'order by Случайное_число limit 100 offset ?',[pn*100])
     print html(u'''
     $header()
     $sidebar()
@@ -123,10 +121,8 @@ def cat_index(cat_id, pn=0):
     return html(u'''
     $header($cat_name)
     $sidebar($cat_id)
-
     <td valign=top>
     <br>
-
     <center>$pages(pn, cat_id)</center>
     $for(book_id, ISBN, title, authors, year, image, description in cursor) {
     <h3>$link(html(title), bookinfo, book_id)</h3>
@@ -135,7 +131,6 @@ def cat_index(cat_id, pn=0):
     $if(authors is None){<h4 class="s1">Нет автора</h4>}$else{<h4 class="s1">$authors</h4>}
     <strong>$year</strong><hr>}   
     <center>$pages(pn, cat_id)</center>
-
     </td>
     $footer()''')    
 
@@ -212,7 +207,7 @@ def pages(pn, cat_id=None):
     if cat_id is None:
         nbooks = con.execute(u'select count(*) from Книга ').fetchone()[0]
         if nbooks<21:return
-        npages = (nbooks / 20) + 1
+        npages = (nbooks / 100) + 1
         for i in range(1, npages+1):
             if i == (pn+1): print '<strong>[%d]</strong>' % i
             else: print '[%s] ' % link(str(i), index, i-1)
@@ -266,7 +261,7 @@ def bookinfo(book_id):
     <strong>ISBN: </strong>$if(ISBN is None){отсутствует}$else{$ISBN}<br>
     <strong>Категория: </strong>$if(cat is None){нет}$else{$cat}<br>
     <strong>Издательство: </strong>$if(pub is None){нет}$else{$pub}<br>    
-    $add(book_id)
+    $basket(book_id)
     <td>
     $footer()''')
 
@@ -276,46 +271,37 @@ def bookimage(book_id):
     row = con.execute(u'select Обложка from Книга where id = ?', [ book_id ]).fetchone()
     if row is None: raise Http404
     return str(row[0])
-
-@printhtml
-def add(book_id):
-    fc = Form()
-    fc.submit=Submit(u'Добавить в корзину')
-    user_id = get_user()
-    if fc.is_valid:
-        con = connect()
-        #добавление в корзину
- 
-    if user_id is None:
-        print u'<p>У Вас не будет корзины, пока Вы не зарегистрируетесь'
-    elif fc.is_valid:
-        print u'<p>Книга была добавлена в Вашу корзину!</p>'
-        print fc
-    else:
-        print fc
 	
 @printhtml
 def basket(book_id):
+    user_id = get_user()
+    if user_id is None:
+        print u'<p>У Вас не будет корзины, пока Вы не зарегистрируетесь'
+        return
     book_id = int(book_id)
     basket = http.session.basket or set()
     if book_id not in basket:
+        print u'<p>Вы можете добавить эту книгу в вашу личнуЮ корзину<br>'
         f = FormaDobavit()
     else:
+        print u'<p>Книга находится в вашей личной корзине вы можете '
         f = FormaUdalit()
     f.book.value = book_id
     print f
     
 class FormaDobavit(Form):
-    book = Hidden()
-    submit = Submit(u'Добавить в корзину!')
+    def _init_(self):
+        book = Hidden()
+        submit = Submit(u'Добавить в корзину')
     def on_submit(self):
         if http.session.basket is None:
             http.session.basket = set()
         http.session.basket.add(int(self.book.value))
 
 class FormaUdalit(Form):
-    book = Hidden()
-    submit = Submit(u'Удалить из корзины!')
+    def _init_(self):
+        book = Hidden()
+        submit = Submit(u'Удалить из корзины')
     def on_submit(self):
         if http.session.basket is None:
             http.session.basket = set()
