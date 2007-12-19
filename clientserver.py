@@ -2,7 +2,6 @@
 
 from pony.thirdparty import sqlite
 from pony.main import *
-from math import ceil
 from pony.web import HttpRedirect
 import sha
 
@@ -23,7 +22,6 @@ def header(title=u'Вы находитесь на Книги-почтой.ru'):
         <td align="center" ><font color="#777777"><h1>$title</h1></font></td>
     </tr>
     </table>
-
     <table bgcolor="#ffff8f" width=100% border="1" cellpadding="1" cellspacing="3">
     <tr>
      ''')
@@ -44,7 +42,7 @@ def sidebar(cat_id=0, book_id=0):
     return html(u'''
     <td align="left" valign="top" width="300" bgcolor="#fff0ff">
     $login()
-	$categories(cat_id, book_id)
+	  $categories(cat_id, book_id)
     </td>
     ''')
 
@@ -55,6 +53,7 @@ def login():
         print u'<h3>Вы вошли как:</h3>'
         print u'<p class="blink">%s</p>' % get_session()['login']
         print u'<p>%s</p>' % link(u'Выйти',logout)
+        print u'<p>%s</p>' % link(view_basket)
         return
     print u'<h3 class="sm">Вход для зарегистрированных пользователей:</h3>'
     f = Form(name='login')
@@ -79,7 +78,8 @@ def login():
                     session['login'] = f.login.value
                     print u'<h3>Вы вошли как:</h3>'
                     print u'<p class="blink">%s</p>' % f.login.value
-                    print u'<p>%s</p>' % link(logout)
+                    print u'<p>%s</p>' % link(u'Выйти',logout)
+                    print u'<p>%s</p>' % link(view_basket)
                     return
     print f
     print u'Еще не зарегистрированы?<br>'
@@ -91,7 +91,7 @@ def login():
 def index(pn=0):
     pn=int(pn)
     con = connect()
-    cursor = con.execute(u'select id, ISBN, Название, Автор, Год_издания, Обложка, Аннотация from Книга '
+    cursor = con.execute(u'select id, ISBN, Название, Автор, Год_издания, Обложка from Книга '
                          u'order by Случайное_число limit 100 offset ?',[pn*100])
     print html(u'''
     $header()
@@ -99,7 +99,7 @@ def index(pn=0):
     <td align="left" valign="top"><h1>Добро пожаловать в наш магазин!</h1>
     <h2>Ознакомьтесь с ассортиментом:</h2>
     <center>$pages(pn)</center>
-    $for(book_id, ISBN, title, authors, year, image, description in cursor) {
+    $for(book_id, ISBN, title, authors, year, image in cursor) {
     <h3>$link(html(title), bookinfo, book_id)</h3>
     $if(image is None){<div align=center><a href="$url(bookinfo, book_id)"><img src="/static/nocover.gif" width=100 height=100 border=0></a></div>}
     $else{<div align=center><a href="$url(bookinfo, book_id)"><img src="$url(bookimage, book_id)" border=0></a></div>}    
@@ -271,41 +271,20 @@ def bookimage(book_id):
     row = con.execute(u'select Обложка from Книга where id = ?', [ book_id ]).fetchone()
     if row is None: raise Http404
     return str(row[0])
-	
-@printhtml
-def basket(book_id):
-    user_id = get_user()
-    if user_id is None:
-        print u'<p>У Вас не будет корзины, пока Вы не зарегистрируетесь'
-        return
-    book_id = int(book_id)
-    basket = http.session.basket or set()
-    if book_id not in basket:
-        print u'<p>Вы можете добавить эту книгу в вашу личнуЮ корзину<br>'
-        f = FormaDobavit()
-    else:
-        print u'<p>Книга находится в вашей личной корзине вы можете '
-        f = FormaUdalit()
-    f.book.value = book_id
-    print f
-    
+
 class FormaDobavit(Form):
-    def _init_(self):
-        book = Hidden()
-        submit = Submit(u'Добавить в корзину')
+    def __init__(self, book_id):
+        self.book_id = book_id
+        self.submit = Submit(u'Добавить в корзину')
     def on_submit(self):
-        if http.session.basket is None:
-            http.session.basket = set()
-        http.session.basket.add(int(self.book.value))
+        http.session.setdefault('basket', set()).add(int(self.book_id))
 
 class FormaUdalit(Form):
-    def _init_(self):
-        book = Hidden()
-        submit = Submit(u'Удалить из корзины')
+    def __init__(self, book_id):
+        self.book_id = book_id
+        self.submit = Submit(u'Удалить из корзины')
     def on_submit(self):
-        if http.session.basket is None:
-            http.session.basket = set()
-        http.session.basket.discard(int(self.book.value))
+        http.session.setdefault('basket', set()).discard(int(self.book_id))
 
 @printhtml
 def categories(current_cat_id, current_book_id):
@@ -320,6 +299,116 @@ def categories(current_cat_id, current_book_id):
         if cat_id == current_cat_id: print '<p>%s' % cat_name
         else: print '<p>%s' % link(cat_name, cat_index, cat_id)
         print '<hr>'
+	
+@printhtml
+def basket(book_id):
+    user_id = get_user()
+    if user_id is None:
+        print u'<p>У Вас не будет корзины, пока Вы не зарегистрируетесь'
+        return
+    book_id = int(book_id)
+    basket = http.session.setdefault('basket', set())
+    if book_id not in basket:
+        print u'<p>Вы можете добавить эту книгу в вашу личнуЮ корзину<br>'
+        f = FormaDobavit(book_id)
+    else:
+        print u'<p>Книга находится в вашей личной корзине вы можете '
+        f = FormaUdalit(book_id)
+    print f
+    
+@http('/basket')
+def view_basket():
+    u"Ваша корзина"
+    basket=http.session.get('basket', set())
+    con = connect()
+    cursor = con.execute(u'select id, ISBN, Название, Автор, Год_издания, Обложка from Книга where id in (%s)'
+                         % ','.join(map(str, basket)))
+    print html(u'''
+    $header(u'Корзина')
+    $sidebar()
+    <td align="left" valign="top"><h1>Просмотр корзины</h1>
+    $if(basket==set([])){Ваша корзина пока что пуста. Заполните ее понравившимися Вам книгами! :)
+    <br>$link(u'На главнуЮ',index)}
+    $else{
+    $for(book_id, ISBN, title, authors, year, image in cursor) {
+    <h3>$link(html(title), bookinfo, book_id)</h3>
+    $if(image is None){<div align=center><a href="$url(bookinfo, book_id)"><img src="/static/nocover.gif" width=100 height=100 border=0></a></div>}
+    $else{<div align=center><a href="$url(bookinfo, book_id)"><img src="$url(bookimage, book_id)" border=0></a></div>}    
+    $if(authors is None){<h4 class="s1">Нет автора</h4>}$else{<h4 class="s1">$authors</h4>}
+    <strong>$year</strong><hr>}
+    $link(u'Отправить заказ',zakaz)}
+    </td>
+    $footer()''')
+
+class ZakazForm(Form):
+    def __init__(self):
+        con=connect()
+        basket=http.session.get('basket', set())
+        cursor = con.execute(u'select id, Название, Автор from Книга where id in (%s)' % ','.join(map(str, basket)))
+        for [book_id, name, author] in cursor:
+            book_name=html('$author <strong>&quot;$name&quot;</strong>')
+            setattr(self, 'item_%d' % book_id, Text(book_name, type=int, value=1))
+    def on_submit(self):
+        con=connect()
+        basket=http.session.get('basket', set())
+        cursor = con.execute(u"insert into Заказ_клиента(id_клиента, Дата_заказа_клиента, Подтверждение, Состояние) "
+                             "values(?, datetime('now', 'localtime'), 0, 0)", [ http.user ])
+        zakaz_id= cursor.lastrowid
+        ok = False
+        for book_id in basket:
+            field = getattr(self, 'item_%d' % book_id, None)
+            if field is None or not field.value: continue            
+            print book_id, field.value
+            con.execute(u"insert into Книга_в_заказе_клиента values(?, ?, ?)", [ zakaz_id, book_id, field.value ])
+            ok = True
+        if not ok: con.rollback()
+        else: con.commit()
+        basket.clear()
+        raise http.Redirect('/')
+
+@http('/zakaz')
+@printhtml
+def zakaz():
+    f=ZakazForm()
+    print html(u'''
+    $header(u'Отправка заказа')
+    $sidebar()
+    <td align="left" valign="top"><h1>Уточните ваш заказ</h1>
+    Введите количество экземпляров для каждой книги заказа! Если книга не нужна, вы можете ввести 0.
+    $f
+    </td>
+    $footer()''')
+
+@http('/moi_zakazi')
+@printhtml
+def view_zakazi():
+    if http.user==None:raise http.Redirect('/')
+    con=connect()
+    print html(u'''
+    $header(u'Ваши заказы')
+    $sidebar()
+    <td align="left" valign="top"><h1>Просмотр заказов</h1>''')
+    print http.user
+    cursor = con.execute(u'select Номер_заказа_клиента, Дата_заказа_клиента, Подтверждение, Состояние from Заказ_клиента where id_клиента=?',[http.user])
+    for zak_id, date, yes, state in cursor:
+        cursor2 = con.execute(u'select Номер_книги, Количество_в_заказе_клиента from Книга_в_заказе_клиента where Номер_заказа=?',[zak_id])
+        print '!!!'
+        for book_id, n_books in cursor2:
+            cursor3 = con.execute(u'select Название, Автор from Книга where id = ?', [book_id])
+            name,author = cursor3
+            print '!!!'
+            print html('''
+            $for(zak_id, date, yes, state in cursor){
+    <h3>Заказ сделан: $date</h3>
+    $for(book_id, n_books in cursor2){$author <strong>&quot;$name&quot;</strong>')}
+    $if(yes==1){
+        $if(state==0){Заказ промотрен менеджером и находится в стадии выполнения...}
+        $else{Заказ выполнен. Ждите книжки.}}
+    $else{Заказ еще не обработан менеджерами.}
+    <tr>
+    }
+    </td>
+    $footer()''')
 
 start_http_server('localhost:8080')
 
