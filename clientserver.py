@@ -48,12 +48,15 @@ def sidebar(cat_id=0, book_id=0):
 
 @printhtml
 def login():
-    user = get_user()
-    if user is not None:
+    user_id = get_user()
+    if user_id is not None:
+        con=connect()
+        name, surname = con.execute(u'select Имя, Фамилия from Клиент where id=?',[user_id]).fetchone()
         print u'<h3>Вы вошли как:</h3>'
-        print u'<p class="blink">%s</p>' % get_session()['login']
+        print u'<p class="s8l">%s (%s %s)</p>' %(get_session()['login'], surname, name)
         print u'<p>%s</p>' % link(u'Выйти',logout)
         print u'<p>%s</p>' % link(view_basket)
+        print u'<p>%s</p>' % link(view_zakazi)
         return
     print u'<h3 class="sm">Вход для зарегистрированных пользователей:</h3>'
     f = Form(name='login')
@@ -76,10 +79,13 @@ def login():
                     set_user(user_id)
                     session = get_session()
                     session['login'] = f.login.value
+                    con=connect()
+                    name, surname = con.execute(u'select Имя, Фамилия from Клиент where id=?',[user_id]).fetchone()        
                     print u'<h3>Вы вошли как:</h3>'
-                    print u'<p class="blink">%s</p>' % f.login.value
+                    print u'<p class="s8l">%s (%s %s)</p>' % (f.login.value, surname, name)
                     print u'<p>%s</p>' % link(u'Выйти',logout)
                     print u'<p>%s</p>' % link(view_basket)
+                    print u'<p>%s</p>' % link(view_zakazi)
                     return
     print f
     print u'Еще не зарегистрированы?<br>'
@@ -178,7 +184,7 @@ def register():
     if (f.country.value and f.password.is_submitted
                         and f.password2.is_submitted
                         and f.password.value!=f.password2.value):
-        if f.country.value == 'Russia': msg = u'Пароли не совпадаЮт!'
+        if f.country.value == 'Russia': msg = u'Пароли не совпадают!'
         else: msg = 'Passwords do not match!'
         f.password.error_text = f.password2.error_text = msg
     if f.is_valid:
@@ -309,14 +315,15 @@ def basket(book_id):
     book_id = int(book_id)
     basket = http.session.setdefault('basket', set())
     if book_id not in basket:
-        print u'<p>Вы можете добавить эту книгу в вашу личнуЮ корзину<br>'
+        print u'<p>Вы можете добавить эту книгу в вашу личную корзину<br>'
         f = FormaDobavit(book_id)
     else:
-        print u'<p>Книга находится в вашей личной корзине вы можете '
+        print u'<p>Книга находится в вашей личной корзине вы можете удалить ее оттуда'
         f = FormaUdalit(book_id)
     print f
     
 @http('/basket')
+@printhtml
 def view_basket():
     u"Ваша корзина"
     basket=http.session.get('basket', set())
@@ -328,7 +335,7 @@ def view_basket():
     $sidebar()
     <td align="left" valign="top"><h1>Просмотр корзины</h1>
     $if(basket==set([])){Ваша корзина пока что пуста. Заполните ее понравившимися Вам книгами! :)
-    <br>$link(u'На главнуЮ',index)}
+    <br>$link(u'На главную',index)}
     $else{
     $for(book_id, ISBN, title, authors, year, image in cursor) {
     <h3>$link(html(title), bookinfo, book_id)</h3>
@@ -382,33 +389,29 @@ def zakaz():
 @http('/moi_zakazi')
 @printhtml
 def view_zakazi():
+    u"Ваши заказы"
     if http.user==None:raise http.Redirect('/')
     con=connect()
     print html(u'''
     $header(u'Ваши заказы')
     $sidebar()
     <td align="left" valign="top"><h1>Просмотр заказов</h1>''')
-    print http.user
+    if con.execute(u'select * from Заказ_клиента where id_клиента=?',[http.user]).fetchone() is None:
+        print u'На этой странице Вы просматриваете состояние Ваших заказов. Поскольку Вы еще ничего не заказали, страница пуста...<br>'
+        print link(u'На главную',index)
     cursor = con.execute(u'select Номер_заказа_клиента, Дата_заказа_клиента, Подтверждение, Состояние from Заказ_клиента where id_клиента=?',[http.user])
     for zak_id, date, yes, state in cursor:
-        cursor2 = con.execute(u'select Номер_книги, Количество_в_заказе_клиента from Книга_в_заказе_клиента where Номер_заказа=?',[zak_id])
-        print '!!!'
+        print html(u'''<hr><h3>Заказ сделан: $date</h3>
+            $if(yes==1){
+                $if(state==0){Заказ промотрен менеджером и находится в стадии выполнения...}
+                $else{Заказ выполнен. Ждите книжки.}}
+            $else{Заказ еще не обработан менеджерами.}<br><br><strong>Содержание заказа:</strong><br>''')
+        cursor2 = con.execute(u'select Номер_книги, Количество_в_заказе_клиента from Книга_в_заказе_клиента where Номер_заказа_клиента=?',[zak_id])
         for book_id, n_books in cursor2:
-            cursor3 = con.execute(u'select Название, Автор from Книга where id = ?', [book_id])
-            name,author = cursor3
-            print '!!!'
-            print html('''
-            $for(zak_id, date, yes, state in cursor){
-    <h3>Заказ сделан: $date</h3>
-    $for(book_id, n_books in cursor2){$author <strong>&quot;$name&quot;</strong>')}
-    $if(yes==1){
-        $if(state==0){Заказ промотрен менеджером и находится в стадии выполнения...}
-        $else{Заказ выполнен. Ждите книжки.}}
-    $else{Заказ еще не обработан менеджерами.}
-    <tr>
-    }
-    </td>
-    $footer()''')
+            cursor3 = con.execute(u'select Название, Автор from Книга where id = ?', [book_id]).fetchone()
+            name, author = cursor3
+            print html(u'$author <strong>&quot;$name&quot;</strong> ($n_books штук)<br>')
+    print html('</td>$footer()')
 
 start_http_server('localhost:8080')
 
