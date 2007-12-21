@@ -157,7 +157,7 @@ def books():
     print f
     manager = False
 
-start_http_server('localhost:8081')
+start_http_server('10.15.45.177:8081')
 
 import webbrowser
-webbrowser.open('http://localhost:8081/management/')
+webbrowser.open('http://10.15.45.177:8081/management/')
