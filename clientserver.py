@@ -158,6 +158,7 @@ def register():
         f.first_name = Text(required=True)
         f.last_name = Text()
         f.email = Text('E-mail', required=True)
+        f.login=Text('Login',required=True)
         f.password = Password(required=True)
         f.password2 = Password('Re-type password', True)
         f.comment = TextArea('You can type your comment here')
@@ -365,7 +366,6 @@ class ZakazForm(Form):
         for book_id in basket:
             field = getattr(self, 'item_%d' % book_id, None)
             if field is None or not field.value: continue            
-            print book_id, field.value
             con.execute(u"insert into  нига_в_заказе_клиента values(?, ?, ?)", [ zakaz_id, book_id, field.value ])
             ok = True
         if not ok: con.rollback()
@@ -413,8 +413,8 @@ def view_zakazi():
             print html(u'$author <strong>&quot;$name&quot;</strong> ($n_books штук)<br>')
     print html('</td>$footer()')
 
-start_http_server('localhost:8080')
+start_http_server('10.15.45.177:8080')
 
 import webbrowser
-webbrowser.open('http://localhost:8080/')
-# show_gui()
+webbrowser.open('http://10.15.45.177:8080/')
+show_gui()
