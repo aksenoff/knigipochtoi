@@ -145,7 +145,6 @@ class BookForm(Form):
                               self.pages.value, self.description.value, self.category.value])
         con.execute(u'update Книга set Случайное_число=random()')
         con.commit()
-        print u'Книга успешно добавлена!'
 
 @http('/management/control_panel/add_books')
 @printhtml
@@ -161,4 +160,4 @@ def books():
 start_http_server('localhost:8081')
 
 import webbrowser
-#webbrowser.open('http://localhost:8081/management/')
+webbrowser.open('http://localhost:8081/management/')
