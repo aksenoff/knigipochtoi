@@ -123,7 +123,9 @@ class BookForm(Form):
         categories = []
         con = connect()
         cursor = con.execute(u'select Название from Категория')
-        for cat in cursor:categories.append(cat)
+        for cat in cursor:
+            cat = u'%s' %cat
+            categories.append(cat)
         self.ISBN = Text(required=True)
         self.title = Text(u"Название", required=True)
         self.author = Text(u"Автор", required=True)
@@ -134,7 +136,7 @@ class BookForm(Form):
         self.cover = Text(u"Переплет")
         self.pages = Text(u"Количество страниц")
         self.description = TextArea(u"Аннотация", rows=10, cols=50, required=True)
-        self.category = Select(u"Категория",required=True,options=map(str,categories))
+        self.category = Select(u"Категория",required=True,options=categories)
     def on_submit(self):
         if self.image.value: image = buffer(f.image.value.read())
         else: image = None
