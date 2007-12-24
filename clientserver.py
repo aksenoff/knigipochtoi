@@ -413,8 +413,8 @@ def view_zakazi():
             print html(u'$author <strong>&quot;$name&quot;</strong> ($n_books штук)<br>')
     print html('</td>$footer()')
 
-start_http_server('10.15.45.177:8080')
+start_http_server('localhost:8080')
 
 import webbrowser
-webbrowser.open('http://10.15.45.177:8080/')
+webbrowser.open('http://localhost:8080/')
 show_gui()
