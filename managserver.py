@@ -97,8 +97,7 @@ def forward(order_id):
     con = connect()
     cursor = con.execute(u'select Номер_книги, Количество_в_заказе_клиента from Книга_в_заказе_клиента where Номер_заказа_клиента = ?', [ order_id ] )
     for book_id, n_books in cursor:
-        postavshik = con.execute(u'select Издательство from Книга where id = ?',[book_id]).fetchone()
-        postavshik=str(postavshik)
+        postavshik = con.execute(u'select Издательство from Книга where id = ?',[book_id]).fetchone()[0]
         cursor2 = con.execute(u"insert into Заказ_поставщику (Имя, Дата_заказа_поставщику) values(?, datetime('now', 'localtime'))", [ postavshik ] )
         zakaz_id = cursor2.lastrowid
         cursor3 = con.execute(u"insert into Книга_в_заказе_поставщику (Номер_книги, Номер_заказа_поставщику, Количество_в_заказе_поставщику) values(?, ?, ?)",[book_id, zakaz_id, n_books])
@@ -123,8 +122,7 @@ class BookForm(Form):
         categories = []
         con = connect()
         cursor = con.execute(u'select Название from Категория')
-        for cat in cursor:
-            cat = u'%s' %cat
+        for [ cat ] in cursor:
             categories.append(cat)
         self.ISBN = Text(required=True)
         self.title = Text(u"Название", required=True)
@@ -159,7 +157,7 @@ def books():
     print f
     manager = False
 
-start_http_server('10.15.45.177:8081')
+start_http_server('localhost:8081')
 
 import webbrowser
-webbrowser.open('http://10.15.45.177:8081/management/')
+webbrowser.open('http://localhost:8081/management/')
