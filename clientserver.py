@@ -42,7 +42,7 @@ def sidebar(cat_id=0, book_id=0):
     return html(u'''
     <td align="left" valign="top" width="300" bgcolor="#fff0ff">
     $login()
-	  $categories(cat_id, book_id)
+      $categories(cat_id, book_id)
     </td>
     ''')
 
@@ -132,8 +132,8 @@ def cat_index(cat_id, pn=0):
     <center>$pages(pn, cat_id)</center>
     $for(book_id, ISBN, title, authors, year, image, description in cursor) {
     <h3>$link(html(title), bookinfo, book_id)</h3>
-	$if(image is None){<div align=center><a href="http://localhost:8080$url(bookinfo, book_id)"><img src="/static/nocover.gif" width=100 height=100 border=0></a></div>}
-	$else{<div align=center><a href="$url(bookinfo, book_id)"><img src="$url(bookimage, book_id)" border=0></a></div>}    
+    $if(image is None){<div align=center><a href="http://localhost:8080$url(bookinfo, book_id)"><img src="/static/nocover.gif" width=100 height=100 border=0></a></div>}
+    $else{<div align=center><a href="$url(bookinfo, book_id)"><img src="$url(bookimage, book_id)" border=0></a></div>}    
     $if(authors is None){<h4 class="s1">Нет автора</h4>}$else{<h4 class="s1">$authors</h4>}
     <strong>$year</strong><hr>}   
     <center>$pages(pn, cat_id)</center>
@@ -306,7 +306,7 @@ def categories(current_cat_id, current_book_id):
         if cat_id == current_cat_id: print '<p>%s' % cat_name
         else: print '<p>%s' % link(cat_name, cat_index, cat_id)
         print '<hr>'
-	
+
 @printhtml
 def basket(book_id):
     user_id = get_user()
@@ -413,8 +413,8 @@ def view_zakazi():
             print html(u'$author <strong>&quot;$name&quot;</strong> ($n_books штук)<br>')
     print html('</td>$footer()')
 
-start_http_server('localhost:8080')
+http.start('localhost:8080')
 
-import webbrowser
-webbrowser.open('http://localhost:8080/')
-show_gui()
+##import webbrowser
+##webbrowser.open('http://localhost:8080/')
+##show_gui()
